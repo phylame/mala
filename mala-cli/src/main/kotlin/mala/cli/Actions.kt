@@ -33,12 +33,6 @@ interface Initializer : Action {
     fun perform(context: AppContext, cmd: CommandLine)
 }
 
-class Switcher(val name: String) : Initializer {
-    override fun perform(context: AppContext, cmd: CommandLine) {
-        context[name] = true
-    }
-}
-
 interface ValueFetcher<T : Any> : Initializer {
     val name: String
 
@@ -54,14 +48,14 @@ interface ValueFetcher<T : Any> : Initializer {
     }
 }
 
-class StringFetcher(override val name: String,
-                    override val validator: ((String) -> Boolean)? = null) : ValueFetcher<String> {
+class RawFetcher(override val name: String,
+                 override val validator: ((String) -> Boolean)? = null) : ValueFetcher<String> {
     override fun parse(str: String) = str
 }
 
-class ConverterFetcher<T : Any>(val type: Class<T>,
-                                override val name: String,
-                                override val validator: ((T) -> Boolean)? = null) : ValueFetcher<T> {
+class TypedFetcher<T : Any>(val type: Class<T>,
+                            override val name: String,
+                            override val validator: ((T) -> Boolean)? = null) : ValueFetcher<T> {
     override fun parse(str: String): T {
         try {
             return Converters.parse(str, type, true) ?: App.die("cannot convert $str to $type")
@@ -71,29 +65,35 @@ class ConverterFetcher<T : Any>(val type: Class<T>,
     }
 }
 
-inline fun <reified T : Any> fetcherFor(name: String) = ConverterFetcher(T::class.java, name)
+inline fun <reified T : Any> fetcherFor(name: String) = TypedFetcher(T::class.java, name)
 
-abstract class SingleInitializer : Initializer {
-    private var performed = false
+abstract class SingleFetcher : Initializer {
+    private var isPerformed = false
 
     protected abstract fun init(context: AppContext, cmd: CommandLine)
 
-    override fun perform(context: AppContext, cmd: CommandLine) {
-        if (!performed) {
+    override final fun perform(context: AppContext, cmd: CommandLine) {
+        if (!isPerformed) {
             init(context, cmd)
-            performed = true
+            isPerformed = true
         }
     }
 }
 
-open class ListFetcher(val option: String) : SingleInitializer() {
+class ValuesFetcher(val option: String) : SingleFetcher() {
     override fun init(context: AppContext, cmd: CommandLine) {
         context[option] = cmd.getOptionValues(option)
     }
 }
 
-open class PropertiesFetcher(val option: String) : SingleInitializer() {
+class PropertiesFetcher(val option: String) : SingleFetcher() {
     override fun init(context: AppContext, cmd: CommandLine) {
         context[option] = cmd.getOptionProperties(option)
+    }
+}
+
+class ValueSwitcher(val name: String) : Initializer {
+    override fun perform(context: AppContext, cmd: CommandLine) {
+        context[name] = true
     }
 }
