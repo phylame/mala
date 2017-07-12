@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/mala.iml" filepath="$PROJECT_DIR$/mala.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mala-cli/mala-cli.iml" filepath="$PROJECT_DIR$/mala-cli/mala-cli.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mala-core/mala-core.iml" filepath="$PROJECT_DIR$/mala-core/mala-core.iml" />
+    </modules>
+  </component>
+</project>
