@@ -53,13 +53,13 @@ object App : LocalizableWrapper() {
 
     var verbose = AppVerbose.ECHO
 
+    lateinit var delegate: AppDelegate
+        private set
+
     lateinit var arguments: Array<String>
         private set
 
     var status: AppStatus = AppStatus.DEFAULT
-        private set
-
-    private lateinit var delegate: AppDelegate
         private set
 
     private val cleanups = LinkedHashSet<Cleanup>()
@@ -72,9 +72,9 @@ object App : LocalizableWrapper() {
 
     fun pathOf(name: String) = "$home/$name"
 
-    fun run(delegate: AppDelegate, arguments: Array<String>) {
-        this.arguments = arguments
+    fun run(delegate: AppDelegate, args: Array<String>) {
         this.delegate = delegate
+        this.arguments = args
         status = AppStatus.STARTING
         delegate.onStart()
         pluginManager.init()
@@ -141,7 +141,7 @@ object App : LocalizableWrapper() {
         cleanups -= action
     }
 
-    fun initAppHome() = File(home).run { !exists() && !mkdirs() }
+    fun initAppHome() = File(home).run { exists() || mkdirs() }
 
     fun resetAppHome() = File(home).deleteRecursively()
 }

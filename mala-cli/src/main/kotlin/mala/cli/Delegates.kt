@@ -20,10 +20,10 @@ import mala.core.App
 import mala.core.AppDelegate
 import org.apache.commons.cli.CommandLineParser
 import org.apache.commons.cli.Option
+import org.apache.commons.cli.Option.Builder
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
-import java.util.*
-import kotlin.collections.HashMap
+import java.util.LinkedList
 
 abstract class CLIDelegate(val parser: CommandLineParser) : AppDelegate {
     val options = Options()
@@ -48,6 +48,14 @@ abstract class CLIDelegate(val parser: CommandLineParser) : AppDelegate {
         addAction(option, object : Command {
             override fun execute(delegate: CLIDelegate): Int = action(delegate)
         })
+    }
+
+    fun Builder.action(action: Action) {
+        addAction(build(), action)
+    }
+
+    fun Builder.action(action: (CLIDelegate) -> Int) {
+        addAction(build(), action)
     }
 
     protected open fun onOptionError(e: ParseException) {

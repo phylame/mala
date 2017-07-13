@@ -49,10 +49,24 @@ object CLI : CLIDelegate(DefaultParser()) {
                 .argName("xxxx")
                 .build(), PropertiesFetcher("a"))
         addAction(Option.builder("x").build(), ValueSwitcher("x"))
+        Option.builder("y")
+                .numberOfArgs(2)
+                .argName("name=value")
+                .action(PropertiesFetcher("y"))
         addAction(Option.builder("c")
                 .desc("convert book")
                 .build()) {
             println(context)
+            0
+        }
+        Option.builder("l")
+                .desc("list supported formats")
+                .action {
+                    println("pmab")
+                    0
+                }
+        defaultCommand = {
+            App.echo("no input files");
             0
         }
     }
