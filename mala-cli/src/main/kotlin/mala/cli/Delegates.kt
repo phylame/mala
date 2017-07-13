@@ -24,6 +24,12 @@ import org.apache.commons.cli.Option.Builder
 import org.apache.commons.cli.Options
 import org.apache.commons.cli.ParseException
 import java.util.LinkedList
+import kotlin.collections.HashMap
+import kotlin.collections.forEach
+import kotlin.collections.isNotEmpty
+import kotlin.collections.map
+import kotlin.collections.plusAssign
+import kotlin.collections.set
 
 abstract class CLIDelegate(val parser: CommandLineParser) : AppDelegate {
     val options = Options()

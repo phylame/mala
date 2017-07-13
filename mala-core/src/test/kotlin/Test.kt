@@ -1,15 +1,14 @@
-import jclp.io.IOUtils
 import jclp.setting.Settings
 import jclp.util.Linguist
-import mala.core.App
-import mala.core.AppDelegate
-import mala.core.AppVerbose
-import mala.core.ResourceManager
+import mala.core.*
+
+object MySettings : Settings(App.pathOf("app")) {
+    var name by mapped("N/A")
+    var age by mapped(-1)
+    var sex by mapped(true, "sex_1")
+}
 
 object MyDelegate : AppDelegate {
-    override fun onStop() {
-        println(App.resetAppHome())
-    }
 
     override val name: String = "testApp"
 
@@ -20,14 +19,12 @@ object MyDelegate : AppDelegate {
     override fun onStart() {
         App.verbose = AppVerbose.TRACE
         App.setTranslator(Linguist("x"))
-        println(App.initAppHome())
-
-        val settings = Settings(App.pathOf("settings/app"))
-        App.registerCleanup(settings::sync)
-        println(settings["your_name"])
-        println(settings.isEnable("app.verbose"))
-        println(IOUtils.resourceFor("!x.properties"))
-        println(rm.linguistFor("x").optTr("app.name", ""))
+        println(MySettings.age)
+        println(MySettings.values.asSequence().toList())
+        MySettings.age = 3456
+        println(MySettings.sex)
+        MySettings.sex = false
+        println(MySettings.values.asSequence().toList())
     }
 
     override fun run() {
