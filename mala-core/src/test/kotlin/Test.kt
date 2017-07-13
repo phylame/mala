@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-package test
-
 import jclp.setting.Settings
 import jclp.util.Linguist
 import mala.core.*

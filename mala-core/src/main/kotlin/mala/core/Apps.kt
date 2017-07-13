@@ -39,6 +39,8 @@ interface AppDelegate : Runnable {
 
     val version: String
 
+    val resources: String get() = "!${javaClass.`package`?.name?.replace('.', '/').orEmpty()}/res"
+
     fun onStart() {}
 
     fun onStop() {}
@@ -66,6 +68,9 @@ object App : LocalizableWrapper() {
 
     val pluginManager = PluginManager(PLUGIN_REGISTRY_PATH)
 
+    lateinit var resourceManager: ResourceManager
+        private set
+
     val home: String by lazy {
         System.getProperty(MALA_HOME_KEY) or { "${System.getProperty("user.home")}/.${delegate.name}" }
     }
@@ -73,8 +78,9 @@ object App : LocalizableWrapper() {
     fun pathOf(name: String) = "$home/$name"
 
     fun run(delegate: AppDelegate, args: Array<String>) {
-        this.delegate = delegate
         this.arguments = args
+        this.delegate = delegate
+        resourceManager = ResourceManager(delegate.resources)
         status = AppStatus.STARTING
         delegate.onStart()
         pluginManager.init()
