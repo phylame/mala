@@ -3,9 +3,9 @@ import jclp.util.Linguist
 import mala.core.*
 
 object MySettings : Settings(App.pathOf("app")) {
-    var name by mapped("N/A")
-    var age by mapped(-1)
-    var sex by mapped(true, "sex_1")
+    var name by map("N/A")
+    var age by map(-1)
+    var sex by map(true, "sex_1")
 }
 
 object MyDelegate : AppDelegate {

@@ -23,13 +23,13 @@ import kotlin.reflect.KProperty
 
 infix fun String?.or(lazyString: () -> String): String = if (isNullOrEmpty()) lazyString() else this!!
 
-fun Settings.mapped(default: Int, key: String = "") = SettingsMapping(Int::class.java, key, Values.wrap(default))
+fun Settings.map(default: Int, key: String = "") = SettingsMapping(Int::class.java, key, Values.wrap(default))
 
-fun Settings.mapped(default: String, key: String = "") = SettingsMapping(String::class.java, key, Values.wrap(default))
+fun Settings.map(default: String, key: String = "") = SettingsMapping(String::class.java, key, Values.wrap(default))
 
-fun Settings.mapped(default: Boolean, key: String = "") = SettingsMapping(Boolean::class.java, key, Values.wrap(default))
+fun Settings.map(default: Boolean, key: String = "") = SettingsMapping(Boolean::class.java, key, Values.wrap(default))
 
-inline fun <reified T> Settings.mapped(default: Value<T>, key: String = "") = SettingsMapping(T::class.java, key, default)
+inline fun <reified T> Settings.map(default: Value<T>, key: String = "") = SettingsMapping(T::class.java, key, default)
 
 class SettingsMapping<T>(val type: Class<T>, val key: String = "", val default: Value<T>) {
     operator fun setValue(settings: Settings, property: KProperty<*>, value: T) {
