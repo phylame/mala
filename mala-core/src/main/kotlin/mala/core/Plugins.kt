@@ -104,3 +104,7 @@ class PluginManager(private val path: String) {
         }
     }
 }
+
+fun Plugin.tr(key: String): String = App.tr(key)
+
+fun Plugin.tr(key: String, vararg args: Array<Any>): String = App.tr(key, *args)

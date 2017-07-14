@@ -151,3 +151,7 @@ object App : LocalizableWrapper() {
 
     fun resetAppHome() = File(home).deleteRecursively()
 }
+
+fun AppDelegate.tr(key: String): String = App.tr(key)
+
+fun AppDelegate.tr(key: String, vararg args: Array<Any>): String = App.tr(key, *args)
