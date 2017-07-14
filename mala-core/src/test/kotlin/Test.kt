@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import jclp.setting.Settings
+import jclp.setting.PropertiesSettings
 import jclp.util.Linguist
 import mala.core.*
 
-object MySettings : Settings(App.pathOf("app")) {
+object MySettings : PropertiesSettings(App.pathOf("app").reader(), null) {
     var name by map("N/A")
     var age by map(-1)
     var sex by map(true, "sex_1")
@@ -36,11 +36,11 @@ object MyDelegate : AppDelegate {
         App.verbose = AppVerbose.TRACE
         App.setTranslator(Linguist("x"))
         println(MySettings.age)
-        println(MySettings.values.asSequence().toList())
+
         MySettings.age = 3456
         println(MySettings.sex)
         MySettings.sex = false
-        println(MySettings.values.asSequence().toList())
+
     }
 
     override fun run() {

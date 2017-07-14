@@ -58,7 +58,7 @@ class TypedFetcher<T : Any>(val type: Class<T>,
                             override val validator: ((T) -> Boolean)? = null) : ValueFetcher<T> {
     override fun parse(str: String): T {
         try {
-            return Converters.parse(str, type, true) ?: App.die("cannot convert $str to $type")
+            return Converters.parse(str, type) ?: App.die("cannot convert $str to $type")
         } catch (e: RuntimeException) {
             App.die("cannot convert input '$str' to '$type'", e)
         }

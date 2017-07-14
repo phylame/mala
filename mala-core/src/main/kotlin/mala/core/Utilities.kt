@@ -33,7 +33,7 @@ inline fun <reified T> Settings.map(default: Value<T>, key: String = "") = Setti
 
 class SettingsMapping<T>(val type: Class<T>, val key: String = "", val default: Value<T>) {
     operator fun setValue(settings: Settings, property: KProperty<*>, value: T) {
-        settings.set(key or { property.name }, value, type)
+        settings.set(key or { property.name }, value)
     }
 
     operator fun getValue(settings: Settings, property: KProperty<*>): T {
