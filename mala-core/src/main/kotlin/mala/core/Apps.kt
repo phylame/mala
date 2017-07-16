@@ -16,7 +16,7 @@
 
 package mala.core
 
-import jclp.util.LocalizableWrapper
+import jclp.util.TranslatorWrapper
 import java.io.File
 
 typealias Cleanup = () -> Unit
@@ -46,7 +46,7 @@ interface AppDelegate : Runnable {
     fun onStop() {}
 }
 
-object App : LocalizableWrapper() {
+object App : TranslatorWrapper() {
     private const val MALA_HOME_KEY = "mala.home"
     private const val PLUGIN_REGISTRY_PATH = "META-INF/mala/plugin.prop"
 
@@ -151,7 +151,3 @@ object App : LocalizableWrapper() {
 
     fun resetAppHome() = File(home).deleteRecursively()
 }
-
-fun AppDelegate.tr(key: String): String = App.tr(key)
-
-fun AppDelegate.tr(key: String, vararg args: Array<Any>): String = App.tr(key, *args)

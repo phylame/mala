@@ -40,7 +40,7 @@ object MyDelegate : AppDelegate {
         MySettings.age = 3456
         println(MySettings.sex)
         MySettings.sex = false
-
+        println("a"*0)
     }
 
     override fun run() {

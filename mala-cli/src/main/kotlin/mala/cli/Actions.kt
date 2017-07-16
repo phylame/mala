@@ -20,8 +20,8 @@ import jclp.text.Converters
 import mala.core.App
 import org.apache.commons.cli.CommandLine
 
-private typealias Validator<T> = (T) -> Boolean
-private typealias AppContext = MutableMap<String, Any>
+typealias Validator<T> = (T) -> Boolean
+typealias AppContext = MutableMap<String, Any>
 
 interface Action
 
@@ -80,9 +80,9 @@ abstract class SingleFetcher : Initializer {
     }
 }
 
-class ValuesFetcher(val option: String) : SingleFetcher() {
+open class ValuesFetcher(val option: String) : SingleFetcher() {
     override fun init(context: AppContext, cmd: CommandLine) {
-        context[option] = cmd.getOptionValues(option)
+        context[option] = cmd.getOptionValues(option).toList()
     }
 }
 

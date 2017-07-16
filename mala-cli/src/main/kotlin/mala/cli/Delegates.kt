@@ -18,50 +18,33 @@ package mala.cli
 
 import mala.core.App
 import mala.core.AppDelegate
-import org.apache.commons.cli.CommandLineParser
-import org.apache.commons.cli.Option
+import org.apache.commons.cli.*
 import org.apache.commons.cli.Option.Builder
-import org.apache.commons.cli.Options
-import org.apache.commons.cli.ParseException
-import java.util.LinkedList
-import kotlin.collections.HashMap
-import kotlin.collections.forEach
-import kotlin.collections.isNotEmpty
-import kotlin.collections.map
-import kotlin.collections.plusAssign
 import kotlin.collections.set
 
 abstract class CLIDelegate(val parser: CommandLineParser) : AppDelegate {
     val options = Options()
 
-    var inputs = emptyArray<String>()
+    var inputs = emptyList<String>()
         private set
 
     val context = HashMap<String, Any>()
 
-    private val commands = LinkedList<Command>()
+    private val commands = LinkedHashSet<Command>()
 
     private val actions = HashMap<String, Action>()
 
-    protected var defaultCommand: ((CLIDelegate) -> Int)? = null
+    protected var defaultCommand: Command? = null
 
     fun addAction(option: Option, action: Action) {
         options.addOption(option)
-        actions[option.opt] = action
+        actions[option.opt ?: option.longOpt] = action
     }
 
     fun addAction(option: Option, action: (CLIDelegate) -> Int) {
         addAction(option, object : Command {
             override fun execute(delegate: CLIDelegate): Int = action(delegate)
         })
-    }
-
-    fun Builder.action(action: Action) {
-        addAction(build(), action)
-    }
-
-    fun Builder.action(action: (CLIDelegate) -> Int) {
-        addAction(build(), action)
     }
 
     protected open fun onOptionError(e: ParseException) {
@@ -79,18 +62,16 @@ abstract class CLIDelegate(val parser: CommandLineParser) : AppDelegate {
         try {
             val cmd = parser.parse(options, App.arguments)
             cmd.options.map {
-                actions[it.opt]
+                actions[it.opt ?: it.longOpt]
             }.forEach {
-                when (it) {
-                    is Command -> {
-                        commands += it
-                    }
-                    is Initializer -> {
-                        it.perform(context, cmd)
-                    }
+                if (it is Initializer) {
+                    it.perform(context, cmd)
+                }
+                if (it is Command) {
+                    commands += it
                 }
             }
-            inputs = cmd.args
+            inputs = cmd.args.asList()
         } catch (e: ParseException) {
             onOptionError(e)
         }
@@ -103,8 +84,28 @@ abstract class CLIDelegate(val parser: CommandLineParser) : AppDelegate {
                 code = minOf(code, command.execute(this))
             }
         } else {
-            code = defaultCommand?.invoke(this) ?: 0
+            code = defaultCommand?.execute(this) ?: 0
         }
         return code
     }
+}
+
+fun Option.group(group: OptionGroup) {
+    group.addOption(this)
+}
+
+fun Builder.action(action: Action): Option = build().apply {
+    (App.delegate as CLIDelegate).addAction(this, action)
+}
+
+fun Builder.action(action: (CLIDelegate) -> Int): Option = build().apply {
+    (App.delegate as CLIDelegate).addAction(this, action)
+}
+
+fun Builder.action(action: (AppContext, CommandLine) -> Unit): Option = build().apply {
+    (App.delegate as CLIDelegate).addAction(this, object : Initializer {
+        override fun perform(context: AppContext, cmd: CommandLine) {
+            action(context, cmd)
+        }
+    })
 }

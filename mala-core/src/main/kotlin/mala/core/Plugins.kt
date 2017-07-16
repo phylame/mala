@@ -29,7 +29,7 @@ interface Plugin {
     fun destroy() {}
 }
 
-class PluginManager(private val path: String) {
+class PluginManager(private val path: String) : Iterable<Plugin> {
     companion object {
         private const val COMMENT_LABEL = "#"
     }
@@ -52,7 +52,7 @@ class PluginManager(private val path: String) {
         plugins.forEach(Plugin::init)
     }
 
-    fun <T : Plugin> with(type: Class<T>, action: (T) -> Unit) {
+    fun <T : Plugin> with(type: Class<T>, action: T.() -> Unit) {
         if (!isEnable) {
             return
         }
@@ -68,6 +68,8 @@ class PluginManager(private val path: String) {
         plugins.forEach(Plugin::destroy)
         plugins.clear()
     }
+
+    override fun iterator(): Iterator<Plugin> = plugins.iterator()
 
     private fun loadPlugins() {
         val loader = if (loader != null) loader!! else javaClass.classLoader
@@ -104,7 +106,3 @@ class PluginManager(private val path: String) {
         }
     }
 }
-
-fun Plugin.tr(key: String): String = App.tr(key)
-
-fun Plugin.tr(key: String, vararg args: Array<Any>): String = App.tr(key, *args)

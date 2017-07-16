@@ -16,12 +16,35 @@
 
 package mala.core
 
+import jclp.io.IOUtils
+import jclp.setting.PropertiesSettings
 import jclp.setting.Settings
 import jclp.value.Value
 import jclp.value.Values
+import java.io.File
 import kotlin.reflect.KProperty
 
+operator fun String.times(n: Int): String {
+    val sb = StringBuilder(length * n)
+    for (i in 1..n) {
+        sb.append(this)
+    }
+    return sb.toString()
+}
+
 infix fun String?.or(lazyString: () -> String): String = if (isNullOrEmpty()) lazyString() else this!!
+
+fun <E : Iterable<E>> E.walk(action: E.(Int, Int) -> Unit) {
+    walkInternal(0, 0, action)
+}
+
+private fun <E : Iterable<E>> E.walkInternal(level: Int, index: Int, action: E.(Int, Int) -> Unit) {
+    action(level, index)
+    val l = level + 1
+    for ((i, e) in this.withIndex()) {
+        e.walkInternal(l, i, action)
+    }
+}
 
 fun Settings.map(default: Int, key: String = "") = SettingsMapping(Int::class.java, key, Values.wrap(default))
 
@@ -41,4 +64,21 @@ class SettingsMapping<T>(val type: Class<T>, val key: String = "", val default: 
     }
 }
 
+open class AppSettings(name: String = "", loading: Boolean = true, autosync: Boolean = true) : PropertiesSettings() {
+    val file = File(App.pathOf(name))
 
+    init {
+        if (loading && file.exists()) {
+            IOUtils.readerFor(file).use {
+                load(it)
+            }
+        }
+        if (autosync) {
+            App.registerCleanup {
+                IOUtils.writerFor(file).use {
+                    sync(it)
+                }
+            }
+        }
+    }
+}
