@@ -75,8 +75,12 @@ open class AppSettings(name: String = "", loading: Boolean = true, autosync: Boo
         }
         if (autosync) {
             App.registerCleanup {
-                IOUtils.writerFor(file).use {
-                    sync(it)
+                if (App.initAppHome()) {
+                    IOUtils.writerFor(file).use {
+                        sync(it)
+                    }
+                } else {
+                    App.error("cannot create app home")
                 }
             }
         }
