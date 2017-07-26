@@ -22,7 +22,7 @@ import org.apache.commons.cli.*
 import org.apache.commons.cli.Option.Builder
 import kotlin.collections.set
 
-abstract class CLIDelegate(val parser: CommandLineParser) : AppDelegate {
+abstract class CDelegate(val parser: CommandLineParser) : AppDelegate {
     val options = Options()
 
     var inputs = emptyList<String>()
@@ -41,9 +41,9 @@ abstract class CLIDelegate(val parser: CommandLineParser) : AppDelegate {
         actions[option.opt ?: option.longOpt] = action
     }
 
-    fun addAction(option: Option, action: (CLIDelegate) -> Int) {
+    fun addAction(option: Option, action: (CDelegate) -> Int) {
         addAction(option, object : Command {
-            override fun execute(delegate: CLIDelegate): Int = action(delegate)
+            override fun execute(delegate: CDelegate): Int = action(delegate)
         })
     }
 
@@ -95,15 +95,15 @@ fun Option.group(group: OptionGroup) {
 }
 
 fun Builder.action(action: Action): Option = build().apply {
-    (App.delegate as CLIDelegate).addAction(this, action)
+    (App.delegate as CDelegate).addAction(this, action)
 }
 
-fun Builder.action(action: (CLIDelegate) -> Int): Option = build().apply {
-    (App.delegate as CLIDelegate).addAction(this, action)
+fun Builder.action(action: (CDelegate) -> Int): Option = build().apply {
+    (App.delegate as CDelegate).addAction(this, action)
 }
 
 fun Builder.action(action: (AppContext, CommandLine) -> Unit): Option = build().apply {
-    (App.delegate as CLIDelegate).addAction(this, object : Initializer {
+    (App.delegate as CDelegate).addAction(this, object : Initializer {
         override fun perform(context: AppContext, cmd: CommandLine) {
             action(context, cmd)
         }

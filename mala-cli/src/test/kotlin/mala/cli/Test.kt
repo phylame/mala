@@ -21,7 +21,7 @@ import mala.core.AppVerbose
 import org.apache.commons.cli.DefaultParser
 import org.apache.commons.cli.Option
 
-object CLI : CLIDelegate(DefaultParser()) {
+object CLI : CDelegate(DefaultParser()) {
     override val name = "testApp"
 
     override val version = "1.0"
@@ -61,14 +61,11 @@ object CLI : CLIDelegate(DefaultParser()) {
         }
         Option.builder("l")
                 .desc("list supported formats")
-                .action {
+                .action { _ ->
                     println("pmab")
                     0
                 }
-        defaultCommand = {
-            App.echo("no input files");
-            0
-        }
+
     }
 }
 

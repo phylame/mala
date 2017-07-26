@@ -33,6 +33,7 @@
     <modules>
         <module>mala-core</module>
         <module>mala-cli</module>
+        <module>mala-ixin</module>
     </modules>
 
     <dependencyManagement>

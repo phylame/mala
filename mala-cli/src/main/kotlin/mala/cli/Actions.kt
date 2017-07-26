@@ -26,7 +26,7 @@ typealias AppContext = MutableMap<String, Any>
 interface Action
 
 interface Command : Action {
-    fun execute(delegate: CLIDelegate): Int
+    fun execute(delegate: CDelegate): Int
 }
 
 interface Initializer : Action {
