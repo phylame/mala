@@ -64,8 +64,6 @@ object App : TranslatorWrapper() {
     var status: AppStatus = AppStatus.DEFAULT
         private set
 
-    private val cleanups = LinkedHashSet<Cleanup>()
-
     val pluginManager = PluginManager(PLUGIN_REGISTRY_PATH)
 
     lateinit var resourceManager: ResourceManager
@@ -138,6 +136,8 @@ object App : TranslatorWrapper() {
             else -> Unit
         }
     }
+
+    private val cleanups = LinkedHashSet<Cleanup>()
 
     fun registerCleanup(action: Cleanup) {
         cleanups += action

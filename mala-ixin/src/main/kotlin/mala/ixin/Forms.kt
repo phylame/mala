@@ -45,4 +45,8 @@ open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title)
         set(value) {
             statusBar?.text = value
         }
+
+    fun createMenu(){
+        
+    }
 }
