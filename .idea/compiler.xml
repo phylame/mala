@@ -9,12 +9,14 @@
         <outputRelativeToContentRoot value="true" />
         <module name="mala-cli" />
         <module name="mala-core" />
+        <module name="mala-ixin" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="mala" target="1.7" />
       <module name="mala-cli" target="1.7" />
       <module name="mala-core" target="1.7" />
+      <module name="mala-ixin" target="1.7" />
+      <module name="mala-project" target="1.7" />
     </bytecodeTargetLevel>
   </component>
 </project>

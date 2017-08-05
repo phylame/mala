@@ -30,17 +30,15 @@ object MyDelegate : AppDelegate {
 
     override val version: String = "1.0"
 
-    val rm = ResourceManager("!")
-
     override fun onStart() {
         App.verbose = AppVerbose.TRACE
-        App.setTranslator(Linguist("x"))
+        App.translator = Linguist("x")
         println(MySettings.age)
 
         MySettings.age = 3456
         println(MySettings.sex)
         MySettings.sex = false
-        println("a"*0)
+        println("a" * 1)
     }
 
     override fun run() {

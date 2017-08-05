@@ -2,9 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/mala.iml" filepath="$PROJECT_DIR$/mala.iml" />
       <module fileurl="file://$PROJECT_DIR$/mala-cli/mala-cli.iml" filepath="$PROJECT_DIR$/mala-cli/mala-cli.iml" />
       <module fileurl="file://$PROJECT_DIR$/mala-core/mala-core.iml" filepath="$PROJECT_DIR$/mala-core/mala-core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mala-ixin/mala-ixin.iml" filepath="$PROJECT_DIR$/mala-ixin/mala-ixin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/mala-project.iml" filepath="$PROJECT_DIR$/mala-project.iml" />
     </modules>
   </component>
 </project>

@@ -17,6 +17,7 @@
 package mala.core
 
 import jclp.io.IOUtils
+import jclp.io.IOUtils.CLASS_PATH_PREFIX
 import jclp.util.Linguist
 import java.net.URL
 import java.util.*
@@ -25,14 +26,14 @@ class ResourceManager(base: String, private val loader: ClassLoader? = null) {
     private val home: String
 
     init {
-        var str: String = base
-        if (str.startsWith("${IOUtils.CLASS_PATH_PREFIX}/")) {
-            str = "${IOUtils.CLASS_PATH_PREFIX}${str.substring(2)}"
+        var path: String = base
+        if (path.startsWith("$CLASS_PATH_PREFIX/")) {
+            path = "$CLASS_PATH_PREFIX${path.substring(2)}"
         }
-        if (str != IOUtils.CLASS_PATH_PREFIX && !str.endsWith("/")) {
-            str += "/"
+        if (path != CLASS_PATH_PREFIX && !path.endsWith("/")) {
+            path += "/"
         }
-        home = str
+        home = path
     }
 
     fun resourceFor(name: String): URL? {
@@ -40,10 +41,8 @@ class ResourceManager(base: String, private val loader: ClassLoader? = null) {
     }
 
     fun linguistFor(name: String, locale: Locale? = null): Linguist {
-        return Linguist((if (home.startsWith(IOUtils.CLASS_PATH_PREFIX)) home.substring(1) else home) + name, locale, loader)
+        return Linguist((if (home.startsWith(CLASS_PATH_PREFIX)) home.substring(1) else home) + name, locale, loader)
     }
 
-    override fun toString(): String {
-        return "ResourceManager(home='$home')"
-    }
+    override fun toString() = "ResourceManager(home='$home')"
 }

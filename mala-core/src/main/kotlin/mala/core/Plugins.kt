@@ -56,9 +56,7 @@ class PluginManager(private val path: String) : Iterable<Plugin> {
         if (!isEnable) {
             return
         }
-        plugins.filter(type::isInstance)
-                .map(type::cast)
-                .forEach(action)
+        plugins.filter(type::isInstance).map(type::cast).forEach(action)
     }
 
     fun destroy() {

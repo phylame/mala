@@ -9,8 +9,8 @@ object MyUI : IDelegate() {
     override val name = "myUI"
 
     override val version = "0.1"
-    
-    
+
+
 }
 
 fun main(args: Array<String>) {

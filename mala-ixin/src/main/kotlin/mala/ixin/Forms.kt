@@ -2,13 +2,7 @@ package mala.ixin
 
 import jclp.setting.Settings
 import java.awt.BorderLayout
-import javax.swing.Action
-import javax.swing.BorderFactory
-import javax.swing.JFrame
-import javax.swing.JLabel
-import javax.swing.JPanel
-import javax.swing.JSeparator
-import javax.swing.JToolBar
+import javax.swing.*
 
 class IStatusBar : JPanel(BorderLayout()) {
     companion object {
