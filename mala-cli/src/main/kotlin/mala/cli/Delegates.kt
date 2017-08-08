@@ -48,7 +48,14 @@ abstract class CDelegate(val parser: CommandLineParser) : AppDelegate {
     }
 
     protected open fun onOptionError(e: ParseException) {
-        App.die("bad option", e)
+        val msg = when (e) {
+            is UnrecognizedOptionException -> App.tr("error.opt.unknown", e.option)
+            is AlreadySelectedException -> App.tr("error.opt.selected", e.option.opt, e.optionGroup.selected)
+            is MissingArgumentException -> App.tr("error.opt.noArg", e.option.opt)
+            is MissingOptionException -> App.tr("error.opt.noOption", e.missingOptions.joinToString(", "))
+            else -> return
+        }
+        App.die(msg)
     }
 
     protected open fun onOptionParsed(): Boolean = true
