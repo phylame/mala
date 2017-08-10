@@ -23,7 +23,7 @@ class IStatusBar : JPanel(BorderLayout()) {
         add(label, BorderLayout.LINE_START)
     }
 
-    fun mark(text: String) {
+    fun toast(text: String) {
         label.text = text
     }
 
@@ -35,18 +35,14 @@ class IStatusBar : JPanel(BorderLayout()) {
 }
 
 open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title) {
-    val actions = HashMap<String, Action>()
-
     var toolBar: JToolBar? = null
 
     var statusBar: IStatusBar? = null
+
+    val actions = HashMap<String, Action>()
 
     var statusText: String get() = statusBar?.text ?: ""
         set(value) {
             statusBar?.text = value
         }
-
-    fun createMenu(){
-        
-    }
 }

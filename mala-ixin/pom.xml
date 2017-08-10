@@ -19,5 +19,10 @@
             <artifactId>mala-core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 </project>

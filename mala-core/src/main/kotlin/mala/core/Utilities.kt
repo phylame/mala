@@ -34,6 +34,14 @@ operator fun String.times(n: Int): String {
 
 infix fun String?.or(lazyString: () -> String): String = if (isNullOrEmpty()) lazyString() else this!!
 
+operator fun StringBuilder.plusAssign(str: String) {
+    append(str)
+}
+
+operator fun StringBuilder.plusAssign(obj: Any) {
+    append(obj)
+}
+
 fun <E : Iterable<E>> E.walk(action: E.(Int, Int) -> Unit) {
     walkInternal(0, 0, action)
 }

@@ -3,15 +3,6 @@ package mala.ixin
 import mala.core.App
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
-import javax.swing.Action
-
-@Suppress("unchecked_cast")
-operator fun <T : Any> Action.get(name: String): T? = getValue(name) as? T
-
-operator fun <T : Any> Action.set(name: String, value: T?) = putValue(name, value)
-
-var Action.isSelected: Boolean get() = getValue(Action.SELECTED_KEY) == true
-    set(value) = putValue(Action.SELECTED_KEY, value)
 
 interface CommandListener {
     fun performed(command: String)
@@ -19,7 +10,7 @@ interface CommandListener {
 
 annotation class Command(val name: String = "")
 
-class CommandDispatcher(proxies: Array<out Any>) : CommandListener {
+class CommandDispatcher(proxies: Array<out Any> = emptyArray()) : CommandListener {
     private val invocations = HashMap<String, Invocation>()
 
     init {

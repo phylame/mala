@@ -37,7 +37,7 @@ class ResourceManager(base: String, private val loader: ClassLoader? = null) {
     }
 
     fun resourceFor(name: String): URL? {
-        return IOUtils.resourceFor(home + name)
+        return IOUtils.resourceFor(home + name.trimStart('/'))
     }
 
     fun linguistFor(name: String, locale: Locale? = null): Linguist {
