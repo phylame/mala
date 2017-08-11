@@ -8,9 +8,10 @@ import jclp.util.StringUtils
 import mala.core.ResourceManager
 import java.awt.*
 import java.awt.event.MouseEvent
-import java.util.*
+import java.util.LinkedList
 import javax.swing.*
 import kotlin.collections.HashMap
+import kotlin.collections.set
 
 infix fun Int.x(height: Int) = Dimension(this, height)
 
@@ -19,6 +20,15 @@ operator fun Dimension.minus(scale: Double) = Dimension((width * scale).toInt(),
 val MouseEvent.isLeft: Boolean get() = SwingUtilities.isLeftMouseButton(this)
 
 val MouseEvent.isRight: Boolean get() = SwingUtilities.isRightMouseButton(this)
+
+val KeyStroke.name: String
+    get() {
+        var str = toString().toUpperCase()
+        str = str.replaceFirst(" typed ", "+")
+        str = str.replaceFirst(" pressed ", "+")
+        str = str.replaceFirst(" released ", "+")
+        return str
+    }
 
 fun ResourceManager.iconFor(name: String): Icon? {
     return ImageIcon(resourceFor(name) ?: return null)

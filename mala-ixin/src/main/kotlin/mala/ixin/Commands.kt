@@ -18,7 +18,11 @@ class CommandDispatcher(proxies: Array<out Any> = emptyArray()) : CommandListene
     }
 
     override fun performed(command: String) {
-        invocations[command]?.invoke() ?: App.error("No such method of proxy for command: $command")
+        invocations[command]?.invoke(command) ?: App.error("No handler for command: $command")
+    }
+
+    fun addProxies(vararg proxies: Any) {
+        proxies.forEach(this::addProxy)
     }
 
     fun addProxy(proxy: Any) {
@@ -26,18 +30,23 @@ class CommandDispatcher(proxies: Array<out Any> = emptyArray()) : CommandListene
             Modifier.isPublic(it.modifiers)
                     && !Modifier.isStatic(it.modifiers)
                     && !Modifier.isAbstract(it.modifiers)
-                    && it.parameterTypes.isEmpty()
+                    && it.parameterTypes.size in 0..1
         }.forEach {
             val command = it.getAnnotation(Command::class.java)
             if (command != null) {
-                invocations.put(if (command.name.isNotEmpty()) command.name else it.name, Invocation(proxy, it))
+                val invocation = Invocation(proxy, it, it.parameterTypes.size == 1)
+                invocations.put(if (command.name.isNotEmpty()) command.name else it.name, invocation)
             }
         }
     }
 
-    data class Invocation(val proxy: Any, val method: Method) {
-        fun invoke() {
-            method.invoke(proxy)
+    data class Invocation(val proxy: Any, val method: Method, val hasParam: Boolean) {
+        fun invoke(command: String) {
+            if (hasParam) {
+                method.invoke(proxy, command)
+            } else {
+                method.invoke(proxy)
+            }
         }
     }
 }

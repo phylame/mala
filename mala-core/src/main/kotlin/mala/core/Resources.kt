@@ -20,7 +20,7 @@ import jclp.io.IOUtils
 import jclp.io.IOUtils.CLASS_PATH_PREFIX
 import jclp.util.Linguist
 import java.net.URL
-import java.util.*
+import java.util.Locale
 
 class ResourceManager(base: String, private val loader: ClassLoader? = null) {
     private val home: String
@@ -41,7 +41,7 @@ class ResourceManager(base: String, private val loader: ClassLoader? = null) {
     }
 
     fun linguistFor(name: String, locale: Locale? = null): Linguist {
-        return Linguist((if (home.startsWith(CLASS_PATH_PREFIX)) home.substring(1) else home) + name, locale, loader)
+        return Linguist((if (home.startsWith(CLASS_PATH_PREFIX)) home.substring(1) else home) + name.trimStart('/'), locale, loader)
     }
 
     override fun toString() = "ResourceManager(home='$home')"

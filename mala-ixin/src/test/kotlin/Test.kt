@@ -1,9 +1,5 @@
 import mala.core.App
 import mala.ixin.*
-import java.awt.BorderLayout
-import javax.swing.Action
-import javax.swing.JButton
-import javax.swing.JLabel
 
 object MyApp : IDelegate() {
     val dispatcher = CommandDispatcher()
@@ -24,7 +20,7 @@ object MyApp : IDelegate() {
 
     override val version = "0.1"
 
-    @Command("exit-app")
+    @Command
     fun exitApp() {
         App.exit()
     }
@@ -35,12 +31,9 @@ class Form : IForm(MyApp.name) {
         IxIn.isAntiAliasing = true
         IxIn.updateSwingTheme(IxIn.swingTheme)
         IxIn.updateGlobalFont(IxIn.globalFont)
-        defaultCloseOperation = EXIT_ON_CLOSE
-        val action = DispatcherAction("exit-app", MyApp.dispatcher)
-        action[Action.SHORT_DESCRIPTION]=IxIn
-        println(action)
-        contentPane.add(JLabel("Test App by WP"))
-        contentPane.add(JButton(action), BorderLayout.PAGE_END)
+        val d = App.resourceManager.designerFor("ui/app.json")
+        init(d!!, MyApp.dispatcher, App, App.resourceManager)
+        statusText = "Ready"
         pack()
     }
 }

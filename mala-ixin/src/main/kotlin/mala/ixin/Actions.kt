@@ -17,14 +17,25 @@ operator fun <T : Any> Action.set(name: String, value: T?) = putValue(name, valu
 var Action.isSelected: Boolean get() = getValue(Action.SELECTED_KEY) == true
     set(value) = putValue(Action.SELECTED_KEY, value)
 
-interface ActionInspector {
-    fun inspect(action: Action)
+fun <T : Action> T.fallbackName(): T {
+    val name = getValue(Action.NAME) as? String
+    if (name.isNullOrEmpty()) {
+        putValue(Action.NAME, getValue(Action.ACTION_COMMAND_KEY))
+    }
+    return this
 }
 
-abstract class IAction(id: String, translator: Translator, resources: ResourceManager) : AbstractAction() {
+abstract class IAction(id: String,
+                       translator: Translator = App,
+                       resources: ResourceManager = App.resourceManager) : AbstractAction() {
     companion object {
         const val SCOPE_KEY = "IxInScopeKey"
+        const val PRESSED_ICON_KEY = "IxInPressedIconKey"
         const val SELECTED_ICON_KEY = "IxInSelectedIconKey"
+        const val ROLLOVER_ICON_KEY = "IxInRolloverIconKey"
+        const val ROLLOVER_SELECTED_ICON_KEY = "IxInRolloverSelectedIconKey"
+        const val DISABLED_ICON_KEY = "IxInDisabledIconKey"
+        const val DISABLED_SELECTED_ICON_KEY = "IxInDisabledSelectedIconKey"
 
         const val ICON_SUFFIX = ".icon"
         const val SCOPE_SUFFIX = ".scope"
@@ -32,10 +43,14 @@ abstract class IAction(id: String, translator: Translator, resources: ResourceMa
         const val DETAILS_SUFFIX = ".details"
         const val SHORTCUT_SUFFIX = ".shortcut"
 
-        const val SHOWY_ICON_SUFFIX = "-showy"
-        const val SELECTED_ICON_SUFFIX = "-selected"
+        const val SHOWY_ICON = "-showy"
+        const val PRESSED_ICON = "-pressed"
+        const val SELECTED_ICON = "-selected"
+        const val ROLLOVER_ICON = "-rollover"
+        const val ROLLOVER_SELECTED_ICON = "-rollover-selected"
+        const val DISABLED_ICON = "-disabled"
+        const val DISABLED_SELECTED_ICON = "-disabled-selected"
 
-        const val ICON_BASE = "gfx/actions"
         const val ICON_FORMAT = ".png"
     }
 
@@ -51,10 +66,16 @@ abstract class IAction(id: String, translator: Translator, resources: ResourceMa
             }
         }
 
-        text = translator.optTr(id + ICON_SUFFIX, null) or { "${IxIn.iconSet}/$ICON_BASE/$id$ICON_FORMAT" }
-        putValue(Action.SMALL_ICON, resources.iconFor(text))
-        putValue(Action.LARGE_ICON_KEY, resources.iconFor(text + SHOWY_ICON_SUFFIX))
-        putValue(SELECTED_ICON_KEY, resources.iconFor(text + SELECTED_ICON_SUFFIX))
+        text = translator.optTr(id + ICON_SUFFIX, null) or { "actions/$id" }
+        text = "gfx/${if (IxIn.iconSet.isEmpty()) "" else IxIn.iconSet + '/'}$text"
+        putValue(Action.SMALL_ICON, resources.iconFor(text + ICON_FORMAT))
+        putValue(Action.LARGE_ICON_KEY, resources.iconFor(text + SHOWY_ICON + ICON_FORMAT))
+        putValue(PRESSED_ICON_KEY, resources.iconFor(text + PRESSED_ICON + ICON_FORMAT))
+        putValue(SELECTED_ICON_KEY, resources.iconFor(text + SELECTED_ICON + ICON_FORMAT))
+        putValue(ROLLOVER_ICON_KEY, resources.iconFor(text + ROLLOVER_ICON + ICON_FORMAT))
+        putValue(ROLLOVER_SELECTED_ICON_KEY, resources.iconFor(text + ROLLOVER_SELECTED_ICON + ICON_FORMAT))
+        putValue(DISABLED_ICON_KEY, resources.iconFor(text + DISABLED_ICON + ICON_FORMAT))
+        putValue(DISABLED_SELECTED_ICON_KEY, resources.iconFor(text + DISABLED_SELECTED_ICON + ICON_FORMAT))
 
         text = translator.optTr(id + SHORTCUT_SUFFIX, "")
         if (text.isNotEmpty()) {
@@ -77,27 +98,22 @@ abstract class IAction(id: String, translator: Translator, resources: ResourceMa
         }
     }
 
-    constructor(id: String) : this(id, App, App.resourceManager)
-
     override fun toString(): String {
-        return keys.map {
-            "$it='${getValue(it.toString())}'"
-        }.joinToString(", ", "${javaClass.simpleName}@${hashCode()}{", "}")
+        return keys.map { "$it='${getValue(it.toString())}'" }.joinToString(", ", "${javaClass.simpleName}@${hashCode()}{", "}")
     }
 }
 
-class SilentAction(id: String, translator: Translator, resources: ResourceManager) : IAction(id, translator, resources) {
+class SilentAction(id: String,
+                   translator: Translator = App,
+                   resources: ResourceManager = App.resourceManager) : IAction(id, translator, resources) {
     override fun actionPerformed(e: ActionEvent?) {
     }
 }
 
-class DispatcherAction(id: String,
-                       translator: Translator,
-                       resources: ResourceManager,
-                       val listener: CommandListener) : IAction(id, translator, resources) {
-
-    constructor(id: String, listener: CommandListener) : this(id, App, App.resourceManager, listener)
-
+class CommandAction(id: String,
+                    val listener: CommandListener,
+                    translator: Translator = App,
+                    resources: ResourceManager = App.resourceManager) : IAction(id, translator, resources) {
     override fun actionPerformed(e: ActionEvent) {
         listener.performed(e.actionCommand)
     }

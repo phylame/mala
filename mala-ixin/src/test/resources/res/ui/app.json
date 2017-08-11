@@ -1,0 +1,48 @@
+{
+  "menubar": [
+    {
+      "id": "menu.file",
+      "items": [
+        "newFile",
+        "openFile",
+        "saveFile",
+        null,
+        "exitApp"
+      ]
+    },
+    {
+      "id": "menu.edit",
+      "items": [
+        "cut",
+        "copy",
+        "paste"
+      ]
+    },
+    {
+      "id": "menu.view",
+      "items": [
+        {
+         "id":"showStatus",
+          "style":"CHECK",
+          "selected":true
+        }
+      ]
+    },
+    {
+      "id": "menu.help",
+      "items": [
+        "contents",
+        "aboutApp"
+      ]
+    }
+  ],
+  "toolbar": [
+    "newFile",
+    "openFile",
+    "saveFile",
+    null,
+    "cut",
+    "copy",
+    "paste"
+  ]
+}
