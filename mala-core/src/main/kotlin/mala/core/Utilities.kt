@@ -19,10 +19,13 @@ package mala.core
 import jclp.io.IOUtils
 import jclp.setting.PropertiesSettings
 import jclp.setting.Settings
+import jclp.util.StringUtils
 import jclp.value.Value
 import jclp.value.Values
 import java.io.File
 import kotlin.reflect.KProperty
+
+fun String.titled(): String = StringUtils.titled(this)
 
 operator fun String.times(n: Int): String {
     val sb = StringBuilder(length * n)

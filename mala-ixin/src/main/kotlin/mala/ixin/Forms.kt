@@ -6,7 +6,7 @@ import mala.core.ResourceManager
 import java.awt.BorderLayout
 import javax.swing.*
 
-open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title), ActionToast {
+open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title), ComponentInspector {
     val actions = ActionMap()
 
     var toolBar: JToolBar? = null
@@ -28,6 +28,15 @@ open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title)
             }
         }
         createStatusBar()
+        initActions()
+    }
+
+    override fun dispose() {
+        saveState()
+        super.dispose()
+    }
+
+    open protected fun initActions() {
     }
 
     open protected fun restoreState() {
@@ -61,7 +70,7 @@ open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title)
         contentPane.add(statusBar, BorderLayout.PAGE_END)
     }
 
-    override fun toast(text: String) {
+    override fun inspect(text: String) {
         statusBar?.toast(text)
     }
 
@@ -71,10 +80,6 @@ open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title)
 }
 
 class IStatusBar : JPanel(BorderLayout()) {
-    companion object {
-        var borderSize = 2
-    }
-
     val label: JLabel = JLabel()
 
     var text: String get() = label.text
@@ -84,8 +89,6 @@ class IStatusBar : JPanel(BorderLayout()) {
         }
 
     init {
-        label.border = BorderFactory.createEmptyBorder(0, borderSize, 0, 0)
-        add(JSeparator(), BorderLayout.PAGE_START)
         add(label, BorderLayout.LINE_START)
     }
 

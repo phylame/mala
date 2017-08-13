@@ -5,6 +5,12 @@ import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import javax.swing.*
 
+fun Component.toggleVisible(): Boolean {
+    val visible = isVisible
+    isVisible = !visible
+    return !visible
+}
+
 fun AbstractButton.update(action: Action) {
     pressedIcon = action[IAction.PRESSED_ICON_KEY]
     selectedIcon = action[IAction.SELECTED_ICON_KEY]
@@ -36,28 +42,30 @@ fun <T : JToolBar> T.attach(button: AbstractButton): T {
     return this
 }
 
-interface ActionToast {
-    fun toast(text: String)
+interface ComponentInspector {
+    fun inspect(text: String)
 
     fun reset()
 }
 
-fun <T : Component> T.toast(toast: ActionToast, action: Action): T = toast(toast) {
+fun <T : Component> T.inspect(inspector: ComponentInspector, action: Action): T = inspect(inspector) {
     action[Action.LONG_DESCRIPTION] ?: ""
 }
 
-fun <T : Component> T.toast(toast: ActionToast, text: String): T = toast(toast) { text }
+fun <T : Component> T.inspect(inspector: ComponentInspector, text: String): T = inspect(inspector) {
+    text
+}
 
-fun <T : Component> T.toast(toast: ActionToast, text: () -> String): T {
+fun <T : Component> T.inspect(inspector: ComponentInspector, text: () -> String): T {
     if (this is JComponent) {
         toolTipText = null
     }
-    addMouseListener(ToastSupport(text, toast))
+    addMouseListener(InspectorSupport(text, inspector))
     return this
 }
 
-private class ToastSupport(val supplier: () -> String, val toast: ActionToast) : MouseAdapter() {
-    private var closed = true
+private class InspectorSupport(val supplier: () -> String, val inspector: ComponentInspector) : MouseAdapter() {
+    private var isClosed = true
 
     override fun mouseEntered(e: MouseEvent) {
         showToast()
@@ -74,15 +82,15 @@ private class ToastSupport(val supplier: () -> String, val toast: ActionToast) :
     private fun showToast() {
         val text = supplier()
         if (text.isNotEmpty()) {
-            toast.toast(text)
-            closed = false
+            inspector.inspect(text)
+            isClosed = false
         }
     }
 
     private fun closeToast() {
-        if (!closed) {
-            toast.reset()
-            closed = true
+        if (!isClosed) {
+            inspector.reset()
+            isClosed = true
         }
     }
 }

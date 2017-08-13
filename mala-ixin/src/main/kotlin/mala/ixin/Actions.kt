@@ -7,7 +7,6 @@ import mala.core.or
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 import javax.swing.Action
-import javax.swing.KeyStroke
 
 @Suppress("unchecked_cast")
 operator fun <T : Any> Action.get(name: String): T? = getValue(name) as? T
@@ -50,8 +49,6 @@ abstract class IAction(id: String,
         const val ROLLOVER_SELECTED_ICON = "-rollover-selected"
         const val DISABLED_ICON = "-disabled"
         const val DISABLED_SELECTED_ICON = "-disabled-selected"
-
-        const val ICON_FORMAT = ".png"
     }
 
     init {
@@ -67,19 +64,18 @@ abstract class IAction(id: String,
         }
 
         text = translator.optTr(id + ICON_SUFFIX, null) or { "actions/$id" }
-        text = "gfx/${if (IxIn.iconSet.isEmpty()) "" else IxIn.iconSet + '/'}$text"
-        putValue(Action.SMALL_ICON, resources.iconFor(text + ICON_FORMAT))
-        putValue(Action.LARGE_ICON_KEY, resources.iconFor(text + SHOWY_ICON + ICON_FORMAT))
-        putValue(PRESSED_ICON_KEY, resources.iconFor(text + PRESSED_ICON + ICON_FORMAT))
-        putValue(SELECTED_ICON_KEY, resources.iconFor(text + SELECTED_ICON + ICON_FORMAT))
-        putValue(ROLLOVER_ICON_KEY, resources.iconFor(text + ROLLOVER_ICON + ICON_FORMAT))
-        putValue(ROLLOVER_SELECTED_ICON_KEY, resources.iconFor(text + ROLLOVER_SELECTED_ICON + ICON_FORMAT))
-        putValue(DISABLED_ICON_KEY, resources.iconFor(text + DISABLED_ICON + ICON_FORMAT))
-        putValue(DISABLED_SELECTED_ICON_KEY, resources.iconFor(text + DISABLED_SELECTED_ICON + ICON_FORMAT))
+        putValue(Action.SMALL_ICON, resources.iconFor(text))
+        putValue(Action.LARGE_ICON_KEY, resources.iconFor(text + SHOWY_ICON))
+        putValue(PRESSED_ICON_KEY, resources.iconFor(text + PRESSED_ICON))
+        putValue(SELECTED_ICON_KEY, resources.iconFor(text + SELECTED_ICON))
+        putValue(ROLLOVER_ICON_KEY, resources.iconFor(text + ROLLOVER_ICON))
+        putValue(ROLLOVER_SELECTED_ICON_KEY, resources.iconFor(text + ROLLOVER_SELECTED_ICON))
+        putValue(DISABLED_ICON_KEY, resources.iconFor(text + DISABLED_ICON))
+        putValue(DISABLED_SELECTED_ICON_KEY, resources.iconFor(text + DISABLED_SELECTED_ICON))
 
         text = translator.optTr(id + SHORTCUT_SUFFIX, "")
         if (text.isNotEmpty()) {
-            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(text))
+            putValue(Action.ACCELERATOR_KEY, IxIn.getKeyStroke(text))
         }
 
         text = translator.optTr(id + TOAST_SUFFIX, "")

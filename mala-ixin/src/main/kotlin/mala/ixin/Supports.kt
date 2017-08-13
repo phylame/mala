@@ -1,11 +1,13 @@
 package mala.ixin
 
 import jclp.io.IOUtils
+import jclp.io.PathUtils
 import jclp.log.Log
 import jclp.text.Converter
 import jclp.text.ConverterManager
 import jclp.util.StringUtils
 import mala.core.ResourceManager
+import mala.core.titled
 import java.awt.*
 import java.awt.event.MouseEvent
 import java.util.LinkedList
@@ -23,19 +25,24 @@ val MouseEvent.isRight: Boolean get() = SwingUtilities.isRightMouseButton(this)
 
 val KeyStroke.name: String
     get() {
-        var str = toString().toUpperCase()
-        str = str.replaceFirst(" typed ", "+")
-        str = str.replaceFirst(" pressed ", "+")
-        str = str.replaceFirst(" released ", "+")
+        var str = toString().titled()
+        str = str.replaceFirst(" Typed ", "+")
+        str = str.replaceFirst(" Pressed ", "+")
+        str = str.replaceFirst(" Released ", "+")
         return str
     }
 
+fun ResourceManager.gfxPath(name: String): String {
+    val dir = "gfx/${if (IxIn.iconSet.isNotEmpty()) IxIn.iconSet + '/' else ""}"
+    return "$dir${if (PathUtils.extName(name).isNotEmpty()) name else name + ".png"}"
+}
+
 fun ResourceManager.iconFor(name: String): Icon? {
-    return ImageIcon(resourceFor(name) ?: return null)
+    return ImageIcon(resourceFor(gfxPath(name)) ?: return null)
 }
 
 fun ResourceManager.imageFor(name: String): Image? {
-    return Toolkit.getDefaultToolkit().getImage(resourceFor(name) ?: return null)
+    return Toolkit.getDefaultToolkit().getImage(resourceFor(gfxPath(name)) ?: return null)
 }
 
 object IxIn {
@@ -162,6 +169,8 @@ object IxIn {
 
         return MnemonicResults(text.toString(), mnemonic, index)
     }
+
+    fun getKeyStroke(spec: String): KeyStroke? = KeyStroke.getKeyStroke(spec)
 
     init {
         for (feel in UIManager.getInstalledLookAndFeels()) {
