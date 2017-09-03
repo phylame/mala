@@ -6,12 +6,18 @@ import jclp.log.Log
 import jclp.text.Converter
 import jclp.text.ConverterManager
 import jclp.util.StringUtils
+import mala.core.App
 import mala.core.ResourceManager
+import mala.core.or
 import mala.core.titled
 import java.awt.*
 import java.awt.event.MouseEvent
-import java.util.LinkedList
+import java.util.*
 import javax.swing.*
+import javax.swing.event.EventListenerList
+import javax.swing.event.UndoableEditEvent
+import javax.swing.undo.UndoManager
+import javax.swing.undo.UndoableEdit
 import kotlin.collections.HashMap
 import kotlin.collections.set
 
@@ -32,6 +38,15 @@ val KeyStroke.name: String
         return str
     }
 
+fun <L : EventListener, E : EventObject> EventListenerList.fireEvent(type: Class<L>, event: E, action: L.(E) -> Unit) {
+    val listeners = listenerList
+    for (i in listeners.size - 2 downTo 0 step 2) {
+        if (listeners[i] === type) {
+            action(type.cast(listeners[i + 1]), event)
+        }
+    }
+}
+
 fun ResourceManager.gfxPath(name: String): String {
     val dir = "gfx/${if (IxIn.iconSet.isNotEmpty()) IxIn.iconSet + '/' else ""}"
     return "$dir${if (PathUtils.extName(name).isNotEmpty()) name else name + ".png"}"
@@ -43,6 +58,62 @@ fun ResourceManager.iconFor(name: String): Icon? {
 
 fun ResourceManager.imageFor(name: String): Image? {
     return Toolkit.getDefaultToolkit().getImage(resourceFor(gfxPath(name)) ?: return null)
+}
+
+open class UndoHelper : UndoManager() {
+    var isModified = false
+        set(value) {
+            field = value
+            if (!isModified) {
+                edit = editToBeUndone()
+            }
+        }
+
+    open protected fun stateChanged() {}
+
+    fun undoIfNeed() {
+        if (canUndo()) {
+            undo()
+        }
+    }
+
+    fun redoIfNeed() {
+        if (canRedo()) {
+            redo()
+        }
+    }
+
+    override fun undo() {
+        super.undo()
+        if (!isModified) {
+            fireStateChanged(true)
+        } else if (edit === editToBeUndone()) {
+            fireStateChanged(false)
+        }
+    }
+
+    override fun redo() {
+        super.redo()
+        if (!isModified) {
+            fireStateChanged(true)
+        } else if (edit === editToBeUndone()) {
+            fireStateChanged(false)
+        }
+    }
+
+    override fun undoableEditHappened(e: UndoableEditEvent?) {
+        super.undoableEditHappened(e)
+        fireStateChanged(true)
+    }
+
+    private var edit: UndoableEdit? = null
+
+    private fun fireStateChanged(modified: Boolean) {
+        if (modified != isModified) {
+            isModified = modified
+            stateChanged()
+        }
+    }
 }
 
 object IxIn {
@@ -75,7 +146,7 @@ object IxIn {
         JFrame.setDefaultLookAndFeelDecorated(enable)
     }
 
-    var iconSet = System.getProperty("ixin.icons").orEmpty()
+    var iconSet = System.getProperty("ixin.icons").or { "default" }
 
     var swingTheme: String = System.getProperty("ixin.theme").orEmpty()
         set(value) {
@@ -85,26 +156,22 @@ object IxIn {
 
     val themes = HashMap<String, String>()
 
-    fun getLafName(name: String): String = themes[name] ?: when (name) {
-        DEFAULT_THEME -> UIManager.getLookAndFeel().javaClass.name
-        SYSTEM_THEME -> UIManager.getSystemLookAndFeelClassName()
-        JAVA_THEME -> UIManager.getCrossPlatformLookAndFeelClassName()
-        else -> name
-    }
+    fun getThemePath(name: String) = themes[name] ?: name
 
     fun updateSwingTheme(name: String) {
         if (name.isNotEmpty()) {
+            val path = getThemePath(name)
             try {
-                UIManager.setLookAndFeel(getLafName(name))
+                UIManager.setLookAndFeel(path)
             } catch (e: Exception) {
-                throw RuntimeException("Cannot set to new laf: $name", e)
+                App.die("cannot set theme: $path", e)
             }
         } else {
             Log.d(TAG, "empty laf theme specified")
         }
     }
 
-    var globalFont: Font = Font.decode(System.getProperty("ixin.font"))
+    var globalFont: Font = Font.getFont("ixin.font")
         set(value) {
             updateGlobalFont(value)
             field = value
@@ -132,11 +199,7 @@ object IxIn {
         }
     }
 
-    val isMnemonicSupport by lazy {
-        "mac" !in System.getProperty("os.name")
-    }
-
-    var isMnemonicEnable = isMnemonicSupport
+    var isMnemonicEnable = "mac" !in System.getProperty("os.name")
 
     data class MnemonicResults(val name: String, val mnemonic: Int, val index: Int) {
         val isEnable get() = isMnemonicEnable && mnemonic != 0
@@ -170,12 +233,22 @@ object IxIn {
         return MnemonicResults(text.toString(), mnemonic, index)
     }
 
-    fun getKeyStroke(spec: String): KeyStroke? = KeyStroke.getKeyStroke(spec)
+    val delegate get() = App.delegate as IDelegate
+
+    fun initSwing() {
+        updateAntiAliasing(isAntiAliasing)
+        updateWindowDecorated(isWindowDecorated)
+        updateSwingTheme(swingTheme)
+        updateGlobalFont(globalFont)
+    }
 
     init {
         for (feel in UIManager.getInstalledLookAndFeels()) {
             themes[feel.name] = feel.className
         }
+        themes[SYSTEM_THEME] = UIManager.getSystemLookAndFeelClassName()
+        themes[DEFAULT_THEME] = UIManager.getLookAndFeel().javaClass.name
+        themes[JAVA_THEME] = UIManager.getCrossPlatformLookAndFeelClassName()
 
         ConverterManager.registerConverter(Point::class.java, object : Converter<Point> {
             override fun render(p: Point): String = "${p.x}-${p.y}"

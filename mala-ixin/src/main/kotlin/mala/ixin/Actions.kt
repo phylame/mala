@@ -7,13 +7,15 @@ import mala.core.or
 import java.awt.event.ActionEvent
 import javax.swing.AbstractAction
 import javax.swing.Action
+import javax.swing.KeyStroke
 
 @Suppress("unchecked_cast")
 operator fun <T : Any> Action.get(name: String): T? = getValue(name) as? T
 
 operator fun <T : Any> Action.set(name: String, value: T?) = putValue(name, value)
 
-var Action.isSelected: Boolean get() = getValue(Action.SELECTED_KEY) == true
+var Action.isSelected: Boolean
+    get() = getValue(Action.SELECTED_KEY) == true
     set(value) = putValue(Action.SELECTED_KEY, value)
 
 fun <T : Action> T.fallbackName(): T {
@@ -75,7 +77,7 @@ abstract class IAction(id: String,
 
         text = translator.optTr(id + SHORTCUT_SUFFIX, "")
         if (text.isNotEmpty()) {
-            putValue(Action.ACCELERATOR_KEY, IxIn.getKeyStroke(text))
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(text))
         }
 
         text = translator.optTr(id + TOAST_SUFFIX, "")
@@ -95,22 +97,24 @@ abstract class IAction(id: String,
     }
 
     override fun toString(): String {
-        return keys.map { "$it='${getValue(it.toString())}'" }.joinToString(", ", "${javaClass.simpleName}@${hashCode()}{", "}")
+        return keys.joinToString(", ", "${javaClass.simpleName}@${hashCode()}{", "}") {
+            "$it='${getValue(it.toString())}'"
+        }
     }
 }
 
 class SilentAction(id: String,
                    translator: Translator = App,
                    resources: ResourceManager = App.resourceManager) : IAction(id, translator, resources) {
-    override fun actionPerformed(e: ActionEvent?) {
+    override fun actionPerformed(e: ActionEvent) {
     }
 }
 
 class CommandAction(id: String,
-                    val listener: CommandListener,
+                    val handler: CommandHandler,
                     translator: Translator = App,
                     resources: ResourceManager = App.resourceManager) : IAction(id, translator, resources) {
     override fun actionPerformed(e: ActionEvent) {
-        listener.performed(e.actionCommand)
+        handler.performed(e.actionCommand)
     }
 }

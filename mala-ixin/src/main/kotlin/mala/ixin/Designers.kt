@@ -51,18 +51,18 @@ open class Item(val id: String,
     override fun toString() = "${javaClass.simpleName}(id='$id', isEnable=$isEnable, isSelected=$isSelected, style=$style)"
 }
 
-fun Item.toAction(listener: CommandListener,
+fun Item.toAction(handler: CommandHandler,
                   translator: Translator = App,
                   resources: ResourceManager = App.resourceManager): Action {
     require(this !== Separator) { "Separator cannot be created as action" }
     require(this !is Group) { "Group cannot be created as action" }
-    val action = CommandAction(id, listener, translator, resources)
+    val action = CommandAction(id, handler, translator, resources)
     action.isSelected = isSelected
     action.isEnabled = isEnable
     return action
 }
 
-fun Action.toButton(style: Style, inspector: ComponentInspector? = null): AbstractButton {
+fun Action.toButton(style: Style = Style.PLAIN, inspector: ComponentInspector? = null): AbstractButton {
     fallbackName()
     val button: AbstractButton = when (style) {
         Style.PLAIN -> JButton(this)
@@ -71,14 +71,23 @@ fun Action.toButton(style: Style, inspector: ComponentInspector? = null): Abstra
         Style.TOGGLE -> JToggleButton(this)
     }
     button.update(this)
-    button.toolTipText = null
     if (inspector != null) {
+        button.toolTipText = null
         button.inspect(inspector, this)
     }
     return button
 }
 
-fun Action.toMenuItem(style: Style, inspector: ComponentInspector? = null): JMenuItem {
+fun Action.toImageButton(style: Style = Style.PLAIN, inspector: ComponentInspector? = null): AbstractButton {
+    val button = toButton(style, inspector)
+    button.isContentAreaFilled = false
+    button.isRolloverEnabled = false
+    button.isBorderPainted = false
+    button.hideActionText = true
+    return button
+}
+
+fun Action.toMenuItem(style: Style = Style.PLAIN, inspector: ComponentInspector? = null): JMenuItem {
     fallbackName()
     val item = when (style) {
         Style.PLAIN -> JMenuItem(this)
@@ -87,27 +96,27 @@ fun Action.toMenuItem(style: Style, inspector: ComponentInspector? = null): JMen
         Style.TOGGLE -> throw IllegalArgumentException("Style of toggle is not supported for menu item")
     }
     item.update(this)
-    item.toolTipText = null
     if (inspector != null) {
+        item.toolTipText = null
         item.inspect(inspector, this)
     }
     return item
 }
 
 fun ActionMap.get(id: String,
-                  listener: CommandListener,
+                  handler: CommandHandler,
                   translator: Translator = App,
                   resources: ResourceManager = App.resourceManager): Action {
-    return get(Item(id), listener, translator, resources)
+    return get(Item(id), handler, translator, resources)
 }
 
 fun ActionMap.get(item: Item,
-                  listener: CommandListener,
+                  handler: CommandHandler,
                   translator: Translator = App,
                   resources: ResourceManager = App.resourceManager): Action {
     var action = this[item.id]
     if (action == null) {
-        action = item.toAction(listener, translator, resources)
+        action = item.toAction(handler, translator, resources)
         put(item.id, action)
     }
     return action
@@ -120,7 +129,17 @@ fun ActionMap.updateKeys(keymap: Map<String, KeyStroke?>, resetOthers: Boolean =
         }
     }
     for ((id, key) in keymap.entries) {
-        get(id)?.putValue(Action.ACCELERATOR_KEY, key)
+        val action = get(id)
+        if (action != null) {
+            action.putValue(Action.ACCELERATOR_KEY, key)
+            var tip: String? = action[Action.SHORT_DESCRIPTION]
+            if (tip != null && tip.isNotEmpty()) {
+                if (key != null) {
+                    tip += " (${key.name})"
+                }
+//                action[Action.SHORT_DESCRIPTION] = tip
+            }
+        }
     }
 }
 
@@ -130,7 +149,7 @@ fun ResourceManager.keymapFor(name: String): Map<String, KeyStroke> {
     val iterator = values.entries.iterator()
     while (iterator.hasNext()) {
         val entry = iterator.next()
-        val stroke = IxIn.getKeyStroke(entry.value as String)
+        val stroke = KeyStroke.getKeyStroke(entry.value as String)
         if (stroke == null) {
             App.error("invalid key stroke: '${entry.value}'")
             iterator.remove()
@@ -147,6 +166,7 @@ open class Group(id: String, val items: Array<Item>) : Item(id)
 
 fun Group.toMenu(translator: Translator = App, resources: ResourceManager = App.resourceManager): JMenu {
     val menu = JMenu(SilentAction(id, translator, resources).fallbackName())
+    menu.toolTipText = null
     return menu
 }
 
@@ -229,29 +249,31 @@ fun ResourceManager.designerFor(name: String): Designer? {
     return JSONDesigner(resourceFor(if (name.endsWith(".json")) name else name + ".json")?.openStream() ?: return null)
 }
 
-fun <T : JMenu> T.attach(items: Array<Item>,
+fun <T : JMenu> T.attach(items: Array<*>,
                          actions: ActionMap,
-                         listener: CommandListener,
+                         handler: CommandHandler,
                          translator: Translator = App,
                          resources: ResourceManager = App.resourceManager,
                          inspector: ComponentInspector? = null): T {
-    popupMenu.attach(items, actions, listener, translator, resources, inspector)
+    popupMenu.attach(items, actions, handler, translator, resources, inspector)
     return this
 }
 
-fun <T : JPopupMenu> T.attach(items: Array<out Item>,
+fun <T : JPopupMenu> T.attach(items: Array<*>,
                               actions: ActionMap,
-                              listener: CommandListener,
+                              handler: CommandHandler,
                               translator: Translator = App,
                               resources: ResourceManager = App.resourceManager,
                               inspector: ComponentInspector? = null): T {
     var group: ButtonGroup? = null
     for (item in items) {
-        val comp: JComponent = when (item) {
-            Separator -> JPopupMenu.Separator()
-            is Group -> item.toMenu(translator, resources).attach(item.items, actions, listener, translator, resources, inspector)
-            else -> {
-                val result = actions.get(item, listener, translator, resources).toMenuItem(item.style, inspector)
+        val comp: Component = when (item) {
+            is Component -> item
+            null, Separator -> JPopupMenu.Separator()
+            is String -> actions.get(item, handler, translator, resources).toMenuItem(Style.PLAIN, inspector)
+            is Group -> item.toMenu(translator, resources).attach(item.items, actions, handler, translator, resources, inspector)
+            is Item -> {
+                val result = actions.get(item, handler, translator, resources).toMenuItem(item.style, inspector)
                 if (item.style == Style.RADIO) {
                     if (group == null) {
                         group = ButtonGroup()
@@ -262,6 +284,7 @@ fun <T : JPopupMenu> T.attach(items: Array<out Item>,
                 }
                 result
             }
+            else -> throw IllegalArgumentException("Illegal item")
         }
         add(comp)
     }
@@ -270,16 +293,17 @@ fun <T : JPopupMenu> T.attach(items: Array<out Item>,
 
 fun <T : JToolBar> T.attach(items: Array<*>,
                             actions: ActionMap,
-                            listener: CommandListener,
+                            handler: CommandHandler,
                             translator: Translator = App,
                             resources: ResourceManager = App.resourceManager,
                             inspector: ComponentInspector? = null): T {
     var group: ButtonGroup? = null
     for (item in items) {
         when (item) {
-            Separator -> addSeparator()
+            is Component -> add(item)
+            null, Separator -> addSeparator()
             is Item -> {
-                val button = actions.get(item.id, listener, translator, resources).toButton(item.style, inspector)
+                val button = actions.get(item.id, handler, translator, resources).toButton(item.style, inspector)
                 attach(button)
                 if (item.style == Style.RADIO) {
                     if (group == null) {
@@ -290,7 +314,7 @@ fun <T : JToolBar> T.attach(items: Array<*>,
                     group = null
                 }
             }
-            is Component -> add(item)
+            is String -> attach(actions.get(item, handler, translator, resources).toButton(Style.PLAIN, inspector))
         }
     }
     return this

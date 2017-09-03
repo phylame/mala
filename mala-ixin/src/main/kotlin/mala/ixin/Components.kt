@@ -1,15 +1,53 @@
 package mala.ixin
 
+import jclp.util.StringUtils
 import java.awt.Component
+import java.awt.Container
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
+import java.util.*
 import javax.swing.*
+import javax.swing.text.JTextComponent
 
 fun Component.toggleVisible(): Boolean {
     val visible = isVisible
     isVisible = !visible
     return !visible
 }
+
+operator fun Container.plusAssign(comp: Component) {
+    add(comp)
+}
+
+val JTextComponent.selectionLength get() = Math.abs(selectionStart - selectionEnd)
+
+fun JTextComponent.toggleCase() {
+    val end = selectionEnd
+    val start = selectionStart
+    val position = caretPosition
+    if (end != start) {
+        val str = selectedText
+        replaceSelection(if (StringUtils.isUpperCase(str)) {
+            str.toLowerCase()
+        } else {
+            str.toUpperCase()
+        })
+        caretPosition = end
+        moveCaretPosition(position)
+    } else {
+        val str = text
+        text = if (StringUtils.isUpperCase(str)) {
+            str.toLowerCase()
+        } else {
+            str.toUpperCase()
+        }
+        caretPosition = position
+    }
+}
+
+val JTextArea.column get() = caretPosition - getLineStartOffset(row)
+
+val JTextArea.row get() = getLineOfOffset(caretPosition)
 
 fun AbstractButton.update(action: Action) {
     pressedIcon = action[IAction.PRESSED_ICON_KEY]
@@ -62,6 +100,104 @@ fun <T : Component> T.inspect(inspector: ComponentInspector, text: () -> String)
     }
     addMouseListener(InspectorSupport(text, inspector))
     return this
+}
+
+class TabEvent(source: Any, val component: Component) : EventObject(source)
+
+interface TabListener : EventListener {
+    fun tabCreated(e: TabEvent) {}
+
+    fun tabActivated(e: TabEvent) {}
+
+    fun tabInactivated(e: TabEvent) {}
+
+    fun tabClosed(e: TabEvent) {}
+}
+
+interface ITab {
+    val titleTip: String?
+
+    val titleBar: Component?
+}
+
+open class ITabbedPane : JTabbedPane() {
+    fun addTabListener(l: TabListener) {
+        listenerList.add(TabListener::class.java, l)
+    }
+
+    fun removeTabListener(l: TabListener) {
+        listenerList.remove(TabListener::class.java, l)
+    }
+
+    val tabListeners get() = listenerList.getListeners(TabListener::class.java)
+
+    @Command
+    fun nextTab() {
+        val count = tabCount
+        var index = selectedIndex
+
+        if (count < 2 || index == -1) {
+            return
+        }
+
+        if (index == count - 1) {
+            index = 0
+        } else {
+            ++index
+        }
+
+        selectedIndex = index
+    }
+
+    @Command
+    fun previousTab() {
+        val count = tabCount
+        var index = selectedIndex
+
+        if (count < 2 || index == -1) {
+            return
+        }
+
+        if (index == 0) {
+            index = count - 1
+        } else {
+            --index
+        }
+
+        selectedIndex = index
+    }
+
+    override fun insertTab(title: String?, icon: Icon?, component: Component, tip: String?, index: Int) {
+        super.insertTab(title, icon, component, tip, index)
+        if (component is ITab) {
+            setTabComponentAt(index, component.titleBar)
+            setToolTipTextAt(index, component.titleTip)
+        }
+        fireTabEvent(component, TabListener::tabCreated)
+    }
+
+    override fun setSelectedIndex(index: Int) {
+        val currentIndex = selectedIndex
+        val currentComponent = selectedComponent
+        super.setSelectedIndex(index)
+        if (currentIndex == -1) {
+            return
+        }
+        if (currentIndex != index) {
+            fireTabEvent(currentComponent, TabListener::tabInactivated)
+        }
+        fireTabEvent(selectedComponent, TabListener::tabActivated)
+    }
+
+    override fun removeTabAt(index: Int) {
+        val component = selectedComponent
+        super.removeTabAt(index)
+        fireTabEvent(component, TabListener::tabClosed)
+    }
+
+    private fun fireTabEvent(component: Component, action: TabListener.(TabEvent) -> Unit) {
+        listenerList.fireEvent(TabListener::class.java, TabEvent(this, component), action)
+    }
 }
 
 private class InspectorSupport(val supplier: () -> String, val inspector: ComponentInspector) : MouseAdapter() {

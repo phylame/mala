@@ -2,41 +2,51 @@ package mala.ixin
 
 import jclp.setting.Settings
 import jclp.util.Translator
+import mala.core.App
 import mala.core.ResourceManager
+import org.jdesktop.swingx.JXFrame
 import java.awt.BorderLayout
+import java.awt.event.WindowAdapter
+import java.awt.event.WindowEvent
 import javax.swing.*
 
-open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title), ComponentInspector {
+open class IForm(title: String = "", val snap: Settings? = null) : JXFrame(title), ComponentInspector {
     val actions = ActionMap()
-
-    var toolBar: JToolBar? = null
 
     var statusBar: IStatusBar? = null
 
     val topMenus = HashMap<String, JMenu>()
 
-    var statusText: String get() = statusBar?.text ?: ""
+    var statusText: String
+        get() = statusBar?.text ?: ""
         set(value) {
             statusBar?.text = value
         }
 
-    protected fun init(designer: Designer, listener: CommandListener, translator: Translator, resources: ResourceManager) {
-        if (designer.menubar?.isNotEmpty() ?: false) {
-            createMenuBar(designer.menubar!!, listener, translator, resources)
-            if (designer.toolbar?.isNotEmpty() ?: false) {
-                createToolBar(designer.toolbar!!, listener, translator, resources)
+    protected fun init(designer: Designer) {
+        init(designer, IxIn.delegate, App, App.resourceManager)
+    }
+
+    protected fun init(designer: Designer, handler: CommandHandler, translator: Translator, resources: ResourceManager) {
+        iconImage = App.resourceManager.imageFor("icon")
+        defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+        addWindowListener(object : WindowAdapter() {
+            override fun windowClosing(e: WindowEvent?) {
+                IxIn.delegate.performed("exit")
             }
+        })
+        if (designer.menubar?.isNotEmpty() == true) {
+            createMenuBar(designer.menubar!!, handler, translator, resources)
+        }
+        if (designer.toolbar?.isNotEmpty() == true) {
+            createToolBar(designer.toolbar!!, handler, translator, resources)
         }
         createStatusBar()
-        initActions()
     }
 
     override fun dispose() {
         saveState()
         super.dispose()
-    }
-
-    open protected fun initActions() {
     }
 
     open protected fun restoreState() {
@@ -45,11 +55,11 @@ open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title)
     open protected fun saveState() {
     }
 
-    private fun createMenuBar(menus: Array<Group>, listener: CommandListener, translator: Translator, resources: ResourceManager) {
+    open protected fun createMenuBar(menus: Array<Group>, handler: CommandHandler, translator: Translator, resources: ResourceManager) {
         val menuBar = JMenuBar()
         for (group in menus) {
             val menu = group.toMenu(translator, resources)
-            menu.attach(group.items, actions, listener, translator, resources, this)
+            menu.attach(group.items, actions, handler, translator, resources, this)
             topMenus[group.id] = menu
             menuBar.add(menu)
         }
@@ -58,14 +68,20 @@ open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title)
         }
     }
 
-    private fun createToolBar(items: Array<*>, listener: CommandListener, translator: Translator, resources: ResourceManager) {
+    open protected fun createToolBar(items: Array<*>, handler: CommandHandler, translator: Translator, resources: ResourceManager) {
         toolBar = JToolBar(title)
-        toolBar?.isRollover = true
-        toolBar?.attach(items, actions, listener, translator, resources, this)
         contentPane.add(toolBar, BorderLayout.PAGE_START)
+        toolBar?.isRollover = true
+        toolBar?.attach(items, actions, handler, translator, resources, this)
+        val popupMenu = JPopupMenu()
+        val menuItem = Item("lockToolbar", style = Style.CHECK)
+                .toAction(handler, translator, resources)
+                .toMenuItem(Style.CHECK, this)
+        popupMenu.add(menuItem)
+        toolBar?.componentPopupMenu = popupMenu
     }
 
-    private fun createStatusBar() {
+    open protected fun createStatusBar() {
         statusBar = IStatusBar()
         contentPane.add(statusBar, BorderLayout.PAGE_END)
     }
@@ -79,10 +95,25 @@ open class IForm(title: String = "", val snap: Settings? = null) : JFrame(title)
     }
 }
 
+fun IForm.getOrPut(id: String): Action = actions.get(id, IxIn.delegate, App, App.resourceManager)
+
+operator fun IForm.get(id: String): Action? = actions[id]
+
+operator fun IForm.set(id: String, enable: Boolean) {
+    setEnable(id, enable)
+}
+
+fun IForm.isEnable(id: String) = actions[id]?.isEnabled == true
+
+fun IForm.setEnable(id: String, enable: Boolean) {
+    actions[id]?.isEnabled = enable
+}
+
 class IStatusBar : JPanel(BorderLayout()) {
     val label: JLabel = JLabel()
 
-    var text: String get() = label.text
+    var text: String
+        get() = label.text
         set (value) {
             previous = value
             label.text = value

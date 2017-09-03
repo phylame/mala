@@ -19,20 +19,22 @@ package mala.core
 import jclp.io.IOUtils
 import jclp.setting.PropertiesSettings
 import jclp.setting.Settings
+import jclp.util.Hierarchial
 import jclp.util.StringUtils
 import jclp.value.Value
 import jclp.value.Values
 import java.io.File
+import java.util.*
 import kotlin.reflect.KProperty
 
 fun String.titled(): String = StringUtils.titled(this)
 
 operator fun String.times(n: Int): String {
-    val sb = StringBuilder(length * n)
+    val b = StringBuilder(length * n)
     for (i in 1..n) {
-        sb.append(this)
+        b.append(this)
     }
-    return sb.toString()
+    return b.toString()
 }
 
 infix fun String?.or(lazyString: () -> String): String = if (isNullOrEmpty()) lazyString() else this!!
@@ -50,11 +52,21 @@ fun <E : Iterable<E>> E.walk(action: E.(Int, Int) -> Unit) {
 }
 
 private fun <E : Iterable<E>> E.walkInternal(level: Int, index: Int, action: E.(Int, Int) -> Unit) {
-    action(level, index)
     val l = level + 1
+    action(level, index)
     for ((i, e) in this.withIndex()) {
         e.walkInternal(l, i, action)
     }
+}
+
+fun <T : Hierarchial<T>> T.toRoot(): List<T> {
+    val list = LinkedList<T>()
+    var parent: T? = this
+    while (parent != null) {
+        list.addFirst(parent)
+        parent = parent.parent
+    }
+    return list
 }
 
 fun map(default: Int, key: String = "") = SettingsMapping(Int::class.java, key, Values.wrap(default))
@@ -87,9 +99,7 @@ open class AppSettings(name: String = "", loading: Boolean = true, autosync: Boo
         if (autosync) {
             App.registerCleanup {
                 if (App.initAppHome()) {
-                    IOUtils.writerFor(file).use {
-                        sync(it)
-                    }
+                    IOUtils.writerFor(file).use(this::sync)
                 } else {
                     App.error("cannot create app home")
                 }

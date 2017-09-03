@@ -7,12 +7,12 @@ object MyApp : IDelegate() {
     override fun onStart() {
         super.onStart()
         App.translator = App.resourceManager.linguistFor("i18n/app")
-        dispatcher.addProxy(this)
+        dispatcher.register(this)
     }
 
-    override fun initUI() {
+    override fun onInit() {
         val form = Form()
-        dispatcher.addProxy(form)
+        dispatcher.register(form)
         form.isVisible = true
     }
 
