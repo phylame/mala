@@ -1,17 +1,3 @@
-### Vim template
-# swap
-[._]*.s[a-v][a-z]
-[._]*.sw[a-p]
-[._]s[a-v][a-z]
-[._]sw[a-p]
-# session
-Session.vim
-# temporary
-.netrwhist
-*~
-# auto-generated tag files
-tags
-
 ### Eclipse template
 .metadata
 bin/
@@ -25,9 +11,6 @@ local.properties
 .loadpath
 .recommenders
 
-# Eclipse Core
-.project
-
 # External tool builders
 .externalToolBuilders/
 
@@ -39,9 +22,6 @@ local.properties
 
 # CDT-specific (C/C++ Development Tooling)
 .cproject
-
-# JDT-specific (Eclipse Java Development Tools)
-.classpath
 
 # Java annotation processor (APT)
 .factorypath
@@ -69,28 +49,23 @@ local.properties
 .scala_dependencies
 .worksheet
 
-### Windows template
-# Windows thumbnail cache files
-Thumbs.db
-ehthumbs.db
-ehthumbs_vista.db
+### Gradle template
+.gradle
+/build/
 
-# Folder config file
-Desktop.ini
+# Ignore Gradle GUI config
+gradle-app.setting
 
-# Recycle Bin used on file shares
-$RECYCLE.BIN/
+# Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
+!gradle-wrapper.jar
 
-# Windows Installer files
-*.cab
-*.msi
-*.msm
-*.msp
+# Cache of project
+.gradletasknamecache
 
-# Windows shortcuts
-*.lnk
+# # Work around https://youtrack.jetbrains.com/issue/IDEA-116898
+# gradle/wrapper/gradle-wrapper.properties
 
-### Java template
+### Kotlin template
 # Compiled class file
 *.class
 
@@ -136,6 +111,9 @@ hs_err_pid*
 .idea/**/gradle.xml
 .idea/**/libraries
 
+# CMake
+cmake-build-debug/
+
 # Mongo Explorer plugin:
 .idea/**/mongoSettings.xml
 
@@ -145,7 +123,7 @@ hs_err_pid*
 ## Plugin-specific files:
 
 # IntelliJ
-/out/
+out/
 
 # mpeltonen/sbt-idea plugin
 .idea_modules/
@@ -153,22 +131,27 @@ hs_err_pid*
 # JIRA plugin
 atlassian-ide-plugin.xml
 
+# Cursive Clojure plugin
+.idea/replstate.xml
+
 # Crashlytics plugin (for Android Studio and IntelliJ)
 com_crashlytics_export_strings.xml
 crashlytics.properties
 crashlytics-build.properties
 fabric.properties
 
-### Maven template
-target/
-pom.xml.tag
-pom.xml.releaseBackup
-pom.xml.versionsBackup
-pom.xml.next
-release.properties
-dependency-reduced-pom.xml
-buildNumber.properties
-.mvn/timing.properties
+### Vim template
+# Swap
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
 
-# Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
-!/.mvn/wrapper/maven-wrapper.jar
+# Session
+Session.vim
+
+# Temporary
+.netrwhist
+*~
+# Auto-generated tag files
+tags

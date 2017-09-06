@@ -3,20 +3,10 @@
   <component name="CompilerConfiguration">
     <annotationProcessing>
       <profile default="true" name="Default" enabled="true" />
-      <profile name="Maven default annotation processors profile" enabled="true">
-        <sourceOutputDir name="target/generated-sources/annotations" />
-        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
-        <module name="mala-cli" />
-        <module name="mala-core" />
-        <module name="mala-ixin" />
-      </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
-      <module name="mala-cli" target="1.7" />
-      <module name="mala-core" target="1.7" />
-      <module name="mala-ixin" target="1.7" />
-      <module name="mala-project" target="1.7" />
+      <module name="mala-core_main" target="1.8" />
+      <module name="mala-core_test" target="1.8" />
     </bytecodeTargetLevel>
   </component>
 </project>

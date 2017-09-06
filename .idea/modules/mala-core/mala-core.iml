@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<module external.linked.project.id=":mala-core" external.linked.project.path="$MODULE_DIR$/../../../mala-core" external.root.project.path="$MODULE_DIR$/../../.." external.system.id="GRADLE" external.system.module.group="pw.phylame.mala" external.system.module.version="3.0" type="JAVA_MODULE" version="4">
+  <component name="NewModuleRootManager" inherit-compiler-output="true">
+    <exclude-output />
+    <content url="file://$MODULE_DIR$/../../../mala-core">
+      <excludeFolder url="file://$MODULE_DIR$/../../../mala-core/.gradle" />
+      <excludeFolder url="file://$MODULE_DIR$/../../../mala-core/build" />
+      <excludeFolder url="file://$MODULE_DIR$/../../../mala-core/out" />
+    </content>
+    <orderEntry type="inheritedJdk" />
+    <orderEntry type="sourceFolder" forTests="false" />
+  </component>
+</module>
