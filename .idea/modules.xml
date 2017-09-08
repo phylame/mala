@@ -2,6 +2,9 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/commons/commons.iml" filepath="$PROJECT_DIR$/.idea/modules/commons/commons.iml" group="commons" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/commons/commons_main.iml" filepath="$PROJECT_DIR$/.idea/modules/commons/commons_main.iml" group="commons" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/commons/commons_test.iml" filepath="$PROJECT_DIR$/.idea/modules/commons/commons_test.iml" group="commons" />
       <module fileurl="file://$PROJECT_DIR$/mala.iml" filepath="$PROJECT_DIR$/mala.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/mala-cli/mala-cli.iml" filepath="$PROJECT_DIR$/.idea/modules/mala-cli/mala-cli.iml" group="mala-cli" />
       <module fileurl="file://$PROJECT_DIR$/.idea/modules/mala-core/mala-core.iml" filepath="$PROJECT_DIR$/.idea/modules/mala-core/mala-core.iml" group="mala-core" />
