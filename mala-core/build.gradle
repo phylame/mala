@@ -4,5 +4,6 @@ plugins {
 }
 
 dependencies {
+    api "pw.phylame.util:commons:$commonsVersion"
     api "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
 }

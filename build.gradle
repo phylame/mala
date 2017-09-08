@@ -9,6 +9,7 @@
 buildscript {
     ext.javaVersion = '1.8'
     ext.kotlinVersion = '1.1.4-3'
+    ext.commonsVersion = '3.0'
 
     repositories {
         repositories {
